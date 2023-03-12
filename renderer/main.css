@@ -104,6 +104,17 @@ main {
   border-bottom: lightgray 2px solid;
   background: #fafafa;
   padding: 10px;
+  border-left: lightgray 10px solid;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.read-item:hover {
+  background-color: #eee;
+}
+
+.read-item.selected {
+  border-left-color: dodgerblue;
 }
 
 .read-item img {

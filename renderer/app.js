@@ -3,6 +3,7 @@
 // All of the Node.js APIs are available in this process.
 
 const { ipcRenderer } = require('electron');
+const items = require('../items');
 
 //Dom nodes
 const showModal = document.getElementById('show-modal');
@@ -10,6 +11,55 @@ const closeModal = document.getElementById('close-modal');
 const modal = document.getElementById('modal');
 const addItem = document.getElementById('add-item');
 const itemUrl = document.getElementById('url');
+const search = document.getElementById('search');
+
+// Open modal from menu
+ipcRenderer.on('menu-show-modal', () => {
+  showModal.click();
+});
+
+// Open selected item from menu
+ipcRenderer.on('menu-open-item', () => {
+  items.open();
+});
+
+// Delete selected item from menu
+ipcRenderer.on('menu-delete-item', () => {
+  let selectedItem = items.getSelectedItem();
+  items.delete(selectedItem.index);
+});
+
+// Open item in native browser from menu
+ipcRenderer.on('menu-open-item-native', () => {
+  items.openNative();
+});
+
+// Focus the search input from the menu
+ipcRenderer.on('menu-focus-search', () => {
+  search.focus();
+});
+
+// Filter items with "search"
+search.addEventListener('keyup', (e) => {
+  // Loop items
+  // getElementsByClassName returns an HTML collection object (similar to a JS array but not quite: why we using Array.from() so we can access forEach() )
+  Array.from(document.getElementsByClassName('read-item')).forEach((item) => {
+    // Hide items that don't match search value
+    // search.value is the text value of the input
+    // hasMatch will return a Boolean value cos of the includes() function
+    let hasMatch = item.innerText.toLowerCase().includes(search.value);
+    item.style.display = hasMatch ? 'flex' : 'none';
+  });
+});
+
+// Navigate item selection with up/down arrows
+// Using a global listener cos we are NOT listening on a specific element
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+    // changeSelection is function in the items.js file
+    items.changeSelection(e.key);
+  }
+});
 
 // Disable & Enable modal buttons
 const toggleModalButtons = () => {
@@ -52,13 +102,15 @@ addItem.addEventListener('click', (e) => {
 });
 
 // Listen for new item from main process
-ipcRenderer.on('new-item-success', (e, item) => {
+ipcRenderer.on('new-item-success', (e, newItem) => {
+  // addItem is a function in the items file
+  items.addItem(newItem, true);
   // Disable buttons
   toggleModalButtons();
 
   //
   modal.style.display = 'none';
-  gg;
+
   itemUrl.value = '';
 });
 
